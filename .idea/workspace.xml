@@ -2,28 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d53c3b91-e193-4a79-8564-e9c25fa94adb" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/RabbitMQLab.iml" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/libs/amqp-client-4.0.2.jar" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/libs/amqp-client-4.1.0-javadoc.jar" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/libs/amqp-client-5.2.0-javadoc.jar" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/libs/amqp-client-5.2.0.jar" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/libs/slf4j-api-1.7.21.jar" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/libs/slf4j-simple-1.7.22.jar" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/out/production/RabbitMQLab/Z1_Consumer$1.class" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/out/production/RabbitMQLab/Z1_Consumer.class" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/out/production/RabbitMQLab/Z1_Producer.class" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/out/production/RabbitMQLab/Z2_Consumer$1.class" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/out/production/RabbitMQLab/Z2_Consumer.class" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/out/production/RabbitMQLab/Z2_Producer.class" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/Z1_Consumer.java" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/Z1_Producer.java" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/Z2_Consumer.java" />
-      <change beforePath="" afterPath="$PROJECT_DIR$/src/Z2_Producer.java" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -64,7 +44,7 @@
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="34">
-              <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+              <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -910,7 +890,7 @@
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
-          <caret line="2" column="0" lean-forward="true" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
           <folding />
         </state>
       </provider>
