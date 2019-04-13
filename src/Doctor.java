@@ -3,7 +3,6 @@ import com.rabbitmq.client.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.concurrent.TimeoutException;
 
 public class Doctor {
 
@@ -20,6 +19,14 @@ public class Doctor {
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
+
+        //LOG QUEUE
+        String logQueue = "log";
+        channel.queueDeclare(logQueue, false, false, false, null);
+
+        //INFO QUEUE
+        String infoQueue = "info";
+        channel.queueDeclare(infoQueue, false, false, false, null);
 
         // TEST REQUEST
         String requestExchange = "testRequest";
@@ -43,11 +50,27 @@ public class Doctor {
 
         channel.basicConsume(resultsQueue, true, consumer);
 
-        handlePatient(channel, requestExchange, doctorName);
+
+
+
+        //INFO HANDLER
+        Consumer infoConsumer = new DefaultConsumer(channel) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                String message = new String(body, "UTF-8");
+                System.out.println("Received info from admin: " + message);
+            }
+        };
+
+        // start listening
+        channel.basicConsume(infoQueue, true, infoConsumer);
+
+
+        handlePatient(channel, requestExchange, doctorName, logQueue);
     }
 
 
-    private static void handlePatient (Channel channel, String exchange, String doctorName) throws IOException {
+    private static void handlePatient (Channel channel, String exchange, String doctorName, String logQueue) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -66,6 +89,7 @@ public class Doctor {
                 String message = doctorName + " " + injury + " " + name;
 
                 channel.basicPublish(exchange, "." + injury, null, message.getBytes("UTF-8"));
+                channel.basicPublish("", logQueue, null, message.getBytes());
             }
         }
     }

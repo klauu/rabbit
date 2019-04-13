@@ -12,7 +12,7 @@ public class Technician {
         System.out.println("I'm a Technician");
         System.out.println("What tests can I do?");
 
-        //init Tech
+        //INIT TECH
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String test1 = br.readLine();
         String test2 = br.readLine();
@@ -23,6 +23,14 @@ public class Technician {
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
+
+        //LOG QUEUE
+        String logQueue = "log";
+        channel.queueDeclare(logQueue, false, false, false, null);
+
+        //INFO QUEUE
+        String infoQueue = "info";
+        channel.queueDeclare(infoQueue, false, false, false, null);
 
         // TEST RESULTS
         String resultsExchange = "results";
@@ -49,11 +57,26 @@ public class Technician {
                 //TODO - błędy
 
                 channel.basicPublish(resultsExchange, "." + msg[0], null, returnMessage.getBytes("UTF-8"));
+                channel.basicPublish("", logQueue, null, returnMessage.getBytes());
             }
         };
 
         System.out.println("Ready to work");
         channel.basicConsume(requestQueue, true, consumer);
+
+
+
+        //INFO HANDLER
+        Consumer infoConsumer = new DefaultConsumer(channel) {
+            @Override
+            public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                String message = new String(body, "UTF-8");
+                System.out.println("Received info from admin: " + message);
+            }
+        };
+
+        // start listening
+        channel.basicConsume(infoQueue, true, infoConsumer);
     }
 
 
