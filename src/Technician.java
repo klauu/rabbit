@@ -3,6 +3,7 @@ import com.rabbitmq.client.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.regex.Pattern;
 
 public class Technician {
 
@@ -11,39 +12,52 @@ public class Technician {
         System.out.println("I'm a Technician");
         System.out.println("What tests can I do?");
 
+        //init Tech
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String key1 = br.readLine();
-        String key2 = br.readLine();
+        String test1 = br.readLine();
+        String test2 = br.readLine();
+        //TODO - poprawność
 
+        //INIT CHANNEL
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
+        // TEST RESULTS
+        String resultsExchange = "results";
+        channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);
 
+        // TEST REQUEST
+        String requestExchange = "testRequest";
+        channel.exchangeDeclare(requestExchange, BuiltinExchangeType.TOPIC);
 
-        // exchange
-        String EXCHANGE_NAME = "testRequest";
-        channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+        //REQUEST QUEUE
+        String requestQueue = channel.queueDeclare().getQueue();
+        channel.queueBind(requestQueue, requestExchange, "#." + test1 + ".#");
+        channel.queueBind(requestQueue, requestExchange, "#." + test2 + ".#");
 
-        String queueName = channel.queueDeclare().getQueue();
-        channel.queueBind(queueName, EXCHANGE_NAME, "#." + key1 + ".#");
-        channel.queueBind(queueName, EXCHANGE_NAME, "#." + key2 + ".#");
-
-        // consumer (message handling)
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
                 System.out.println("Received: " + message);
+
+                String[] msg = message.split(Pattern.quote(" "));
+
+                String returnMessage = msg[1] + " " + msg[2] + " done";
+                //TODO - błędy
+
+                channel.basicPublish(resultsExchange, "." + msg[0], null, returnMessage.getBytes("UTF-8"));
             }
         };
 
-        // start listening
-        System.out.println("Waiting for messages...");
-        channel.basicConsume(queueName, true, consumer);
-
-
+        System.out.println("Ready to work");
+        channel.basicConsume(requestQueue, true, consumer);
     }
+
+
+
+
 
 }
