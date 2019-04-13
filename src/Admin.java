@@ -17,9 +17,11 @@ public class Admin {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        //INFO QUEUE
-        String infoQueue = "info";
-        channel.queueDeclare(infoQueue, false, false, false, null);
+        //INFO QUEUE -> FANOUT
+        String infoExchange = "info";
+        channel.exchangeDeclare(infoExchange, BuiltinExchangeType.FANOUT);
+       // String infoQueue = "info";
+       // channel.queueDeclare(infoQueue, false, false, false, null);
 
         //LOG QUEUE
         String logQueue = "log";
@@ -46,7 +48,8 @@ public class Admin {
             //TODO - poprawność
 
             if(!msg.equals("quit")){
-                channel.basicPublish("", infoQueue, null, msg.getBytes());
+                channel.basicPublish(infoExchange, "", null, msg.getBytes("UTF-8"));
+
             }
         }
 

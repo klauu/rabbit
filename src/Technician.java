@@ -9,42 +9,38 @@ public class Technician {
 
     public static void main(String[] argv) throws Exception{
 
-        System.out.println("I'm a Technician");
-        System.out.println("What tests can I do?");
-
-        //INIT TECH
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String test1 = br.readLine();
-        String test2 = br.readLine();
-        //TODO - poprawność
-
         //INIT CHANNEL
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
+        channel.basicQos(1);
+
+        System.out.println("I'm a Technician");
+        System.out.println("What tests can I do?");
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String test1 = br.readLine();
+        String test2 = br.readLine();
+        //TODO - poprawność
 
         //LOG QUEUE
         String logQueue = "log";
         channel.queueDeclare(logQueue, false, false, false, null);
 
-        //INFO QUEUE
-        String infoQueue = "info";
-        channel.queueDeclare(infoQueue, false, false, false, null);
+        //TEST1
+        String queue1 = test1;
+        channel.queueDeclare(queue1, false, false, false, null);
 
-        // TEST RESULTS
+        //TEST2
+        String queue2 = test2;
+        channel.queueDeclare(queue2, false, false, false, null);
+
+        //TEST RESULTS
         String resultsExchange = "results";
-        channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);
+        channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);  //->DIRECT TODO
 
-        // TEST REQUEST
-        String requestExchange = "testRequest";
-        channel.exchangeDeclare(requestExchange, BuiltinExchangeType.TOPIC);
-
-        //REQUEST QUEUE
-        String requestQueue = channel.queueDeclare().getQueue();
-        channel.queueBind(requestQueue, requestExchange, "#." + test1 + ".#");
-        channel.queueBind(requestQueue, requestExchange, "#." + test2 + ".#");
-
+        //TEST HANDLER
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -62,9 +58,20 @@ public class Technician {
         };
 
         System.out.println("Ready to work");
-        channel.basicConsume(requestQueue, true, consumer);
+        channel.basicConsume(queue1, true, consumer);
+        channel.basicConsume(queue2, true, consumer);
 
 
+        //INFO QUEUE
+        String infoExchange = "info";
+        channel.exchangeDeclare(infoExchange, BuiltinExchangeType.FANOUT);
+
+        String infoQueue = channel.queueDeclare().getQueue();
+        channel.queueBind(infoQueue, infoExchange, "");
+
+      //  String infoQueue = "info";
+      //  channel.queueDeclare(infoQueue, false, false, false, null);
+        //-> FANOUT TODO
 
         //INFO HANDLER
         Consumer infoConsumer = new DefaultConsumer(channel) {
@@ -75,7 +82,6 @@ public class Technician {
             }
         };
 
-        // start listening
         channel.basicConsume(infoQueue, true, infoConsumer);
     }
 

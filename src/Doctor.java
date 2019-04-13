@@ -25,14 +25,20 @@ public class Doctor {
         channel.queueDeclare(logQueue, false, false, false, null);
 
         //INFO QUEUE
-        String infoQueue = "info";
-        channel.queueDeclare(infoQueue, false, false, false, null);
+     //   String infoQueue = "info";
+     //   channel.queueDeclare(infoQueue, false, false, false, null);
 
-        // TEST REQUEST
-        String requestExchange = "testRequest";
-        channel.exchangeDeclare(requestExchange, BuiltinExchangeType.TOPIC);
 
-        // TEST RESULTS
+        String queue1 = "knee";
+        channel.queueDeclare(queue1, false, false, false, null);
+
+        String queue2 = "elbow";
+        channel.queueDeclare(queue2, false, false, false, null);
+
+        String queue3 = "hip";
+        channel.queueDeclare(queue3, false, false, false, null);
+
+        //TEST RESULTS
         String resultsExchange = "results";
         channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);
 
@@ -51,7 +57,16 @@ public class Doctor {
         channel.basicConsume(resultsQueue, true, consumer);
 
 
+        //INFO QUEUE
+        String infoExchange = "info";
+        channel.exchangeDeclare(infoExchange, BuiltinExchangeType.FANOUT);
 
+        String infoQueue = channel.queueDeclare().getQueue();
+        channel.queueBind(infoQueue, infoExchange, "");
+
+        //  String infoQueue = "info";
+        //  channel.queueDeclare(infoQueue, false, false, false, null);
+        //-> FANOUT TODO
 
         //INFO HANDLER
         Consumer infoConsumer = new DefaultConsumer(channel) {
@@ -62,15 +77,14 @@ public class Doctor {
             }
         };
 
-        // start listening
         channel.basicConsume(infoQueue, true, infoConsumer);
 
 
-        handlePatient(channel, requestExchange, doctorName, logQueue);
+        handlePatient(channel, doctorName, logQueue);
     }
 
 
-    private static void handlePatient (Channel channel, String exchange, String doctorName, String logQueue) throws IOException {
+    private static void handlePatient (Channel channel, String doctorName, String logQueue) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -88,7 +102,7 @@ public class Doctor {
 
                 String message = doctorName + " " + injury + " " + name;
 
-                channel.basicPublish(exchange, "." + injury, null, message.getBytes("UTF-8"));
+                channel.basicPublish("", injury, null, message.getBytes());
                 channel.basicPublish("", logQueue, null, message.getBytes());
             }
         }
