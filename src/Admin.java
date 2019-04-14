@@ -17,11 +17,9 @@ public class Admin {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        //INFO QUEUE -> FANOUT
+        //INFO QUEUE
         String infoExchange = "info";
         channel.exchangeDeclare(infoExchange, BuiltinExchangeType.FANOUT);
-       // String infoQueue = "info";
-       // channel.queueDeclare(infoQueue, false, false, false, null);
 
         //LOG QUEUE
         String logQueue = "log";
@@ -36,8 +34,7 @@ public class Admin {
         };
 
         channel.basicConsume(logQueue, true, consumer);
-
-
+        
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         String msg = "";
@@ -45,7 +42,6 @@ public class Admin {
         while(!msg.equals("quit")){
             System.out.println("Enter your info message: ");
             msg = br.readLine();
-            //TODO - poprawność
 
             if(!msg.equals("quit")){
                 channel.basicPublish(infoExchange, "", null, msg.getBytes("UTF-8"));

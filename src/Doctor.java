@@ -3,16 +3,11 @@ import com.rabbitmq.client.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 public class Doctor {
 
     public static void main(String[] argv) throws Exception {
-
-        System.out.println("I'm a Doctor");
-        System.out.println("What's my name?");
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String doctorName = br.readLine();
 
         //INIT CHANNEL
         ConnectionFactory factory = new ConnectionFactory();
@@ -20,25 +15,25 @@ public class Doctor {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        //LOG QUEUE
-        String logQueue = "log";
-        channel.queueDeclare(logQueue, false, false, false, null);
+        System.out.println("I'm a Doctor");
+        System.out.println("What's my name?");
 
-        //INFO QUEUE
-     //   String infoQueue = "info";
-     //   channel.queueDeclare(infoQueue, false, false, false, null);
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String doctorName = br.readLine();
 
-
+        //KNEE QUEUE
         String queue1 = "knee";
         channel.queueDeclare(queue1, false, false, false, null);
 
+        //ELBOW QUEUE
         String queue2 = "elbow";
         channel.queueDeclare(queue2, false, false, false, null);
 
+        //HIP QUEUE
         String queue3 = "hip";
         channel.queueDeclare(queue3, false, false, false, null);
 
-        //TEST RESULTS
+        //TEST RESULTS EXCHANGE
         String resultsExchange = "results";
         channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);
 
@@ -64,10 +59,6 @@ public class Doctor {
         String infoQueue = channel.queueDeclare().getQueue();
         channel.queueBind(infoQueue, infoExchange, "");
 
-        //  String infoQueue = "info";
-        //  channel.queueDeclare(infoQueue, false, false, false, null);
-        //-> FANOUT TODO
-
         //INFO HANDLER
         Consumer infoConsumer = new DefaultConsumer(channel) {
             @Override
@@ -79,6 +70,9 @@ public class Doctor {
 
         channel.basicConsume(infoQueue, true, infoConsumer);
 
+        //LOG QUEUE
+        String logQueue = "log";
+        channel.queueDeclare(logQueue, false, false, false, null);
 
         handlePatient(channel, doctorName, logQueue);
     }
@@ -94,9 +88,12 @@ public class Doctor {
         while(!injury.equals("quit")){
             System.out.println("Enter your injury: ");
             injury = br.readLine();
-            //TODO - poprawność
 
-            if(!injury.equals("quit")){
+            String[] tests = {"knee", "elbow", "hip"};
+            if(!Arrays.asList(tests).contains(injury)){
+                System.out.println("We can't help you in our hospital");
+            }
+            else if(!injury.equals("quit")){
                 System.out.println("Enter your name: ");
                 name = br.readLine();
 

@@ -3,6 +3,7 @@ import com.rabbitmq.client.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class Technician {
@@ -22,23 +23,25 @@ public class Technician {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String test1 = br.readLine();
         String test2 = br.readLine();
-        //TODO - poprawność
+
+        String[] tests = {"knee", "elbow", "hip"};
+        if(!Arrays.asList(tests).contains(test1) || !Arrays.asList(tests).contains(test2) ){
+            System.out.println("Your tests are not ok");
+        }
+
+        //TEST1 QUEUE
+        channel.queueDeclare(test1, false, false, false, null);
+
+        //TEST2 QUEUE
+        channel.queueDeclare(test2, false, false, false, null);
+
+        //TEST RESULTS EXCHANGE
+        String resultsExchange = "results";
+        channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);  //->DIRECT TODO
 
         //LOG QUEUE
         String logQueue = "log";
         channel.queueDeclare(logQueue, false, false, false, null);
-
-        //TEST1
-        String queue1 = test1;
-        channel.queueDeclare(queue1, false, false, false, null);
-
-        //TEST2
-        String queue2 = test2;
-        channel.queueDeclare(queue2, false, false, false, null);
-
-        //TEST RESULTS
-        String resultsExchange = "results";
-        channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);  //->DIRECT TODO
 
         //TEST HANDLER
         Consumer consumer = new DefaultConsumer(channel) {
@@ -50,7 +53,6 @@ public class Technician {
                 String[] msg = message.split(Pattern.quote(" "));
 
                 String returnMessage = msg[1] + " " + msg[2] + " done";
-                //TODO - błędy
 
                 channel.basicPublish(resultsExchange, "." + msg[0], null, returnMessage.getBytes("UTF-8"));
                 channel.basicPublish("", logQueue, null, returnMessage.getBytes());
@@ -58,8 +60,8 @@ public class Technician {
         };
 
         System.out.println("Ready to work");
-        channel.basicConsume(queue1, true, consumer);
-        channel.basicConsume(queue2, true, consumer);
+        channel.basicConsume(test1, true, consumer);
+        channel.basicConsume(test2, true, consumer);
 
 
         //INFO QUEUE
@@ -69,16 +71,12 @@ public class Technician {
         String infoQueue = channel.queueDeclare().getQueue();
         channel.queueBind(infoQueue, infoExchange, "");
 
-      //  String infoQueue = "info";
-      //  channel.queueDeclare(infoQueue, false, false, false, null);
-        //-> FANOUT TODO
-
         //INFO HANDLER
         Consumer infoConsumer = new DefaultConsumer(channel) {
             @Override
             public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
                 String message = new String(body, "UTF-8");
-                System.out.println("Received info from admin: " + message);
+                System.out.println("Received info message from admin: " + message);
             }
         };
 
