@@ -34,12 +34,11 @@ public class Doctor {
         channel.queueDeclare(queue3, false, false, false, null);
 
         //TEST RESULTS EXCHANGE
-        String resultsExchange = "results";
-        channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);
+        String testsExchange = "tests";
+        channel.exchangeDeclare(testsExchange, BuiltinExchangeType.DIRECT);
 
-        //RESULTS QUEUE
         String resultsQueue = channel.queueDeclare().getQueue();
-        channel.queueBind(resultsQueue, resultsExchange, "#." + doctorName + ".#");
+        channel.queueBind(resultsQueue, testsExchange, doctorName);
 
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
@@ -51,13 +50,11 @@ public class Doctor {
 
         channel.basicConsume(resultsQueue, true, consumer);
 
-
-        //INFO QUEUE
-        String infoExchange = "info";
-        channel.exchangeDeclare(infoExchange, BuiltinExchangeType.FANOUT);
+        String adminExchange = "adminExchange";
+        channel.exchangeDeclare(adminExchange, BuiltinExchangeType.TOPIC);
 
         String infoQueue = channel.queueDeclare().getQueue();
-        channel.queueBind(infoQueue, infoExchange, "");
+        channel.queueBind(infoQueue, adminExchange, "#.info.#");
 
         //INFO HANDLER
         Consumer infoConsumer = new DefaultConsumer(channel) {
@@ -70,15 +67,11 @@ public class Doctor {
 
         channel.basicConsume(infoQueue, true, infoConsumer);
 
-        //LOG QUEUE
-        String logQueue = "log";
-        channel.queueDeclare(logQueue, false, false, false, null);
-
-        handlePatient(channel, doctorName, logQueue);
+        handlePatient(channel, doctorName, adminExchange);
     }
 
 
-    private static void handlePatient (Channel channel, String doctorName, String logQueue) throws IOException {
+    private static void handlePatient (Channel channel, String doctorName, String exchange) throws IOException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -100,7 +93,7 @@ public class Doctor {
                 String message = doctorName + " " + injury + " " + name;
 
                 channel.basicPublish("", injury, null, message.getBytes());
-                channel.basicPublish("", logQueue, null, message.getBytes());
+                channel.basicPublish(exchange, ".log", null, message.getBytes("UTF-8"));
             }
         }
     }

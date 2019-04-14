@@ -36,12 +36,15 @@ public class Technician {
         channel.queueDeclare(test2, false, false, false, null);
 
         //TEST RESULTS EXCHANGE
-        String resultsExchange = "results";
-        channel.exchangeDeclare(resultsExchange, BuiltinExchangeType.TOPIC);  //->DIRECT TODO
+        String testsExchange = "tests";
+        channel.exchangeDeclare(testsExchange, BuiltinExchangeType.DIRECT);
 
-        //LOG QUEUE
-        String logQueue = "log";
-        channel.queueDeclare(logQueue, false, false, false, null);
+        //ADMIN EXCHANGE
+        String adminExchange = "adminExchange";
+        channel.exchangeDeclare(adminExchange, BuiltinExchangeType.TOPIC);
+
+        String infoQueue = channel.queueDeclare().getQueue();
+        channel.queueBind(infoQueue, adminExchange, "#.info.#");
 
         //TEST HANDLER
         Consumer consumer = new DefaultConsumer(channel) {
@@ -54,22 +57,15 @@ public class Technician {
 
                 String returnMessage = msg[1] + " " + msg[2] + " done";
 
-                channel.basicPublish(resultsExchange, "." + msg[0], null, returnMessage.getBytes("UTF-8"));
-                channel.basicPublish("", logQueue, null, returnMessage.getBytes());
+                channel.basicPublish(testsExchange, msg[0], null, returnMessage.getBytes("UTF-8"));
+                channel.basicPublish(adminExchange, ".log", null, returnMessage.getBytes("UTF-8"));
+
             }
         };
 
         System.out.println("Ready to work");
         channel.basicConsume(test1, true, consumer);
         channel.basicConsume(test2, true, consumer);
-
-
-        //INFO QUEUE
-        String infoExchange = "info";
-        channel.exchangeDeclare(infoExchange, BuiltinExchangeType.FANOUT);
-
-        String infoQueue = channel.queueDeclare().getQueue();
-        channel.queueBind(infoQueue, infoExchange, "");
 
         //INFO HANDLER
         Consumer infoConsumer = new DefaultConsumer(channel) {
@@ -82,9 +78,5 @@ public class Technician {
 
         channel.basicConsume(infoQueue, true, infoConsumer);
     }
-
-
-
-
 
 }

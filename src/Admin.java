@@ -17,13 +17,12 @@ public class Admin {
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
 
-        //INFO QUEUE
-        String infoExchange = "info";
-        channel.exchangeDeclare(infoExchange, BuiltinExchangeType.FANOUT);
+        //ADMIN_EXCHANGE
+        String adminExchange = "adminExchange";
+        channel.exchangeDeclare(adminExchange, BuiltinExchangeType.TOPIC);
 
-        //LOG QUEUE
-        String logQueue = "log";
-        channel.queueDeclare(logQueue, false, false, false, null);
+        String logQueue = channel.queueDeclare().getQueue();
+        channel.queueBind(logQueue, adminExchange, "#.log.#");
 
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
@@ -34,7 +33,7 @@ public class Admin {
         };
 
         channel.basicConsume(logQueue, true, consumer);
-        
+
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         String msg = "";
@@ -44,7 +43,7 @@ public class Admin {
             msg = br.readLine();
 
             if(!msg.equals("quit")){
-                channel.basicPublish(infoExchange, "", null, msg.getBytes("UTF-8"));
+                channel.basicPublish(adminExchange, ".info", null, msg.getBytes("UTF-8"));
 
             }
         }
