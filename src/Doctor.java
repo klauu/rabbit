@@ -21,18 +21,6 @@ public class Doctor {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String doctorName = br.readLine();
 
-        //KNEE QUEUE
-        String queue1 = "knee";
-        channel.queueDeclare(queue1, false, false, false, null);
-
-        //ELBOW QUEUE
-        String queue2 = "elbow";
-        channel.queueDeclare(queue2, false, false, false, null);
-
-        //HIP QUEUE
-        String queue3 = "hip";
-        channel.queueDeclare(queue3, false, false, false, null);
-
         //TEST RESULTS EXCHANGE
         String testsExchange = "tests";
         channel.exchangeDeclare(testsExchange, BuiltinExchangeType.DIRECT);
